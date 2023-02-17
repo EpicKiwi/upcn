@@ -6,6 +6,7 @@
 #include "cla/posix/cla_smtcp.h"
 #include "cla/posix/cla_tcpclv3.h"
 #include "cla/posix/cla_tcpspp.h"
+#include "cla/posix/cla_file.h"
 #else // PLATFORM_STM32
 #include "cla/stm32/cla_usbotg.h"
 #endif // PLATFORM_STM32
@@ -41,6 +42,7 @@ const struct available_cla_list_entry AVAILABLE_CLAS[] = {
 	{ "smtcp", &smtcp_create },
 	{ "tcpclv3", &tcpclv3_create },
 	{ "tcpspp", &tcpspp_create },
+	{ "file", &filecla_create },
 #else // PLATFORM_STM32
 	{ "usbotg", &usbotg_create },
 #endif // PLATFORM_STM32
