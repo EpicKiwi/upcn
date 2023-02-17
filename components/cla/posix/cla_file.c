@@ -167,7 +167,7 @@ struct cla_config *filecla_create(
 	struct filecla_config *config = malloc(sizeof(struct filecla_config));
 
 	if (!config) {
-		LOG("file: Memory allocation failed!");
+		LOG("FileCLA: Memory allocation failed!");
 		return NULL;
 	}
 	cla_config_init(&config->base, bundle_agent_interface);
