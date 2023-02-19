@@ -1,2 +1,7 @@
 build/
 __pycache__
+.cproject
+.project
+.pyc
+.externalToolBuilders
+.settings
