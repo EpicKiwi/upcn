@@ -6,6 +6,7 @@
 #include "upcn/router.h"
 #include "upcn/router_task.h"
 #include "upcn/task_tags.h"
+#include "upcn/bundle_retry.h"
 
 #include "agents/application_agent.h"
 #include "agents/config_agent.h"
@@ -59,10 +60,16 @@ void start_tasks(const struct upcn_cmdline_options *const opt)
 			= hal_queue_create(ROUTER_QUEUE_LENGTH,
 					   sizeof(struct router_signal));
 	ASSERT(bundle_agent_interface.router_signaling_queue != NULL);
+	
 	bundle_agent_interface.bundle_signaling_queue
 			= hal_queue_create(BUNDLE_QUEUE_LENGTH,
 				sizeof(struct bundle_processor_signal));
 	ASSERT(bundle_agent_interface.bundle_signaling_queue != NULL);
+
+	bundle_agent_interface.bundle_retry_signaling_queue
+			= hal_queue_create(BUNDLE_RETRY_QUEUE_LENGTH,
+				sizeof(struct bundle_retry_signal));
+	ASSERT(bundle_agent_interface.bundle_retry_signaling_queue != NULL);
 
 	struct router_task_parameters *router_task_params =
 			malloc(sizeof(struct router_task_parameters));
@@ -84,6 +91,17 @@ void start_tasks(const struct upcn_cmdline_options *const opt)
 			bundle_agent_interface.local_eid;
 	bundle_processor_task_params->status_reporting =
 			opt->status_reporting;
+	bundle_processor_task_params->retry_signaling_queue = 
+			bundle_agent_interface.bundle_retry_signaling_queue;
+
+	struct bundle_retry_task_parameters *bundle_retry_task_params
+		= malloc(sizeof(struct bundle_retry_task_parameters));
+		
+	ASSERT(bundle_retry_task_params != NULL);
+	bundle_retry_task_params->bundle_processing_signaling_queue = 
+			bundle_agent_interface.bundle_signaling_queue;
+	bundle_retry_task_params->retry_signaling_queue =
+			bundle_agent_interface.bundle_retry_signaling_queue;
 
 	hal_task_create(router_task,
 			"router_t",
@@ -98,6 +116,13 @@ void start_tasks(const struct upcn_cmdline_options *const opt)
 			bundle_processor_task_params,
 			DEFAULT_TASK_STACK_SIZE,
 			(void *)BUNDLE_PROCESSOR_TASK_TAG);
+
+	hal_task_create(bundle_retry_task,
+			"bundl_rtry_t",
+			BUNDLE_RETRY_TASK_PRIORITY,
+			bundle_retry_task_params,
+			DEFAULT_TASK_STACK_SIZE,
+			(void *)BUNDLE_RETRY_TASK_TAG);
 
 	config_agent_setup(bundle_agent_interface.router_signaling_queue);
 	management_agent_setup();

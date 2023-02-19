@@ -9,6 +9,7 @@ struct bundle_agent_interface {
 
 	QueueIdentifier_t bundle_signaling_queue;
 	QueueIdentifier_t router_signaling_queue;
+	QueueIdentifier_t bundle_retry_signaling_queue;
 };
 
 #endif // BUNDLE_AGENT_INTERFACE_H

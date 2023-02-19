@@ -58,6 +58,7 @@ static const int IS_DEBUG_BUILD;
 /* default lengths of some individual queues */
 #define ROUTER_QUEUE_LENGTH 30
 #define BUNDLE_QUEUE_LENGTH 10
+#define BUNDLE_RETRY_QUEUE_LENGTH 10
 /* Contact dropping / failed forwarding policy */
 enum failed_forwarding_policy {
 	POLICY_DROP,
@@ -88,7 +89,8 @@ enum failed_forwarding_policy {
 /* The maximum size of a bundle for which custody will be accepted */
 #define CUSTODY_MAX_BUNDLE_SIZE 1024
 
-
+/* Retry to send bundle if no route is defined after the specified timeout in seconds */
+#define BUNDLE_RETRY_TIMEOUT 5
 
 /*
  * [CLA] convergence layer related configuration

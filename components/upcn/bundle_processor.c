@@ -8,6 +8,7 @@
 #include "upcn/result.h"
 #include "upcn/router_task.h"
 #include "upcn/task_tags.h"
+#include "upcn/bundle_retry.h"
 
 #include "bundle6/bundle6.h"
 #include "bundle7/hopcount.h"
@@ -30,6 +31,7 @@ enum bundle_handling_result {
 // TODO: Move static state into context struct passed into functions
 
 static QueueIdentifier_t out_queue;
+static QueueIdentifier_t retry_queue;
 static const char *local_eid;
 static bool status_reporting;
 
@@ -60,6 +62,7 @@ static void bundle_forwarding_contraindicated(
 	struct bundle *bundle, enum bundle_status_report_reason reason);
 static void bundle_forwarding_failed(
 	struct bundle *bundle, enum bundle_status_report_reason reason);
+static void bundle_forwarding_retry(struct bundle *bundle);
 static void bundle_expired(struct bundle *bundle);
 static void bundle_receive(struct bundle *bundle);
 static enum bundle_handling_result handle_unknown_block_flags(
@@ -131,6 +134,7 @@ void bundle_processor_task(void * const param)
 	struct bundle_processor_signal signal;
 
 	out_queue = p->router_signaling_queue;
+	retry_queue = p->retry_signaling_queue;
 	local_eid = p->local_eid;
 	status_reporting = p->status_reporting;
 
@@ -157,6 +161,7 @@ static inline void handle_signal(const struct bundle_processor_signal signal)
 		LOGI("BundleProcessor: Bundle not found", signal.bundle);
 		return;
 	}
+	
 	switch (signal.type) {
 	case BP_SIGNAL_BUNDLE_INCOMING:
 		bundle_receive(b);
@@ -272,10 +277,21 @@ static void bundle_forwarding_success(struct bundle *bundle)
 static void bundle_forwarding_contraindicated(
 	struct bundle *bundle, enum bundle_status_report_reason reason)
 {
-	/* 5.4.1-1: For now, we declare forwarding failure everytime */
-	bundle_forwarding_failed(bundle, reason);
-	/* 5.4.1-2 (a): At the moment, custody transfer is declared as failed */
-	/* 5.4.1-2 (b): Will not be handled */
+	if(reason == BUNDLE_SR_REASON_NO_KNOWN_ROUTE){
+		bundle_forwarding_retry(bundle);
+	} else {
+		/* 5.4.1-1: For now, we declare forwarding failure everytime */
+		bundle_forwarding_failed(bundle, reason);
+		/* 5.4.1-2 (a): At the moment, custody transfer is declared as failed */
+		/* 5.4.1-2 (b): Will not be handled */
+	}
+}
+
+/**
+ * Send bundle to to BundleRetry task to reschendule bundle sending to a future time
+ */
+static void bundle_forwarding_retry(struct bundle *bundle){
+	bundle_retry_inform(retry_queue, bundle->id, BR_SIGNAL_SCHEDULE_RETRY);
 }
 
 /* 5.4.2 */

@@ -25,6 +25,7 @@ struct bundle_processor_signal {
 struct bundle_processor_task_parameters {
 	QueueIdentifier_t router_signaling_queue;
 	QueueIdentifier_t signaling_queue;
+	QueueIdentifier_t retry_signaling_queue;
 	const char *local_eid;
 	bool status_reporting;
 };

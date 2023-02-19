@@ -340,7 +340,7 @@ static struct bundle_processing_result process_bundle(struct bundle *bundle)
 			result.status_or_fragments = 1;
 		else
 			result.status_or_fragments = BUNDLE_RESULT_NO_MEMORY;
-	} else if (!bundle_must_not_fragment(bundle)) {
+	} else if (route.fragments > 1 && !bundle_must_not_fragment(bundle)) {
 		// Only fragment if it is allowed -- if not, there is no route.
 		result = apply_fragmentation(bundle, route);
 	}
