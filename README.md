@@ -1,7 +1,12 @@
 µPCN - A Free and Lean DTN Implementation for Microcontrollers and POSIX
 =======================================================================
 
-**Note:** This is a fork of original µPCN released on [https://www.upcn.eu/](https://www.upcn.eu/). This fork is focused on POSIX and implement a custom routing algorithm.
+**Note:** This is a fork of original µPCN released on [https://www.upcn.eu/](https://www.upcn.eu/). This fork is focused on POSIX and implement a custom routing algorithm. The following features differ from the original µPCN :
+
+* File-based CLA (wip in `file-cla`)
+* Retry task (wip in `retry-task`)
+
+---
 
 See `./LICENSE.txt` and `./LICENSE-3RD-PARTY.txt` for legal information.
 
